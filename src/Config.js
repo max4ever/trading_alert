@@ -1,7 +1,9 @@
 import { config as loadDotenv } from 'dotenv';
 
 export class Config {
-  static #REQUIRED = ['ALERT_URL', 'SYMBOL', 'SMA_PERIOD'];
+  // Only the alert URL is truly per-deployment; the rest have sane defaults so
+  // a new deployment needs one variable set, not three.
+  static #DEFAULTS = { SYMBOL: 'TQQQ', SMA_PERIOD: '200' };
 
   constructor(env = process.env) {
     // dotenv leaves already-set env vars alone, so real env wins over the file.
@@ -13,25 +15,26 @@ export class Config {
     // Trimmed because a value pasted into a dashboard field often carries
     // whitespace, and a stray space breaks the URL rather than the check.
     this.alertUrl = env.ALERT_URL.trim();
-    this.symbol = env.SYMBOL.trim();
-    this.smaPeriod = Number(env.SMA_PERIOD);
+    this.symbol = env.SYMBOL?.trim() || Config.#DEFAULTS.SYMBOL;
+    this.smaPeriod = Number(env.SMA_PERIOD?.trim() || Config.#DEFAULTS.SMA_PERIOD);
     this.forceAlert = env.FORCE_ALERT === 'true';
   }
 
   #validate(env) {
-    const missing = Config.#REQUIRED.filter((key) => !env[key]?.trim());
-    if (missing.length > 0) {
-      const present = Config.#REQUIRED.filter((key) => env[key]?.trim());
+    if (!env.ALERT_URL?.trim()) {
       throw new Error(
-        `Missing required config: ${missing.join(', ')}. ` +
-          `Present: ${present.length > 0 ? present.join(', ') : 'none of them'}. ` +
-          `These must reach the process as environment variables (see .env.example).`,
+        'ALERT_URL is missing. It must reach the process as an environment ' +
+          'variable (see .env.example). SYMBOL and SMA_PERIOD are optional.',
       );
     }
 
-    const period = Number(env.SMA_PERIOD);
-    if (!Number.isInteger(period) || period < 2) {
-      throw new Error(`SMA_PERIOD must be an integer >= 2, got "${env.SMA_PERIOD}"`);
+    // Only checked when supplied; an absent value falls back to the default.
+    const rawPeriod = env.SMA_PERIOD?.trim();
+    if (rawPeriod) {
+      const period = Number(rawPeriod);
+      if (!Number.isInteger(period) || period < 2) {
+        throw new Error(`SMA_PERIOD must be an integer >= 2, got "${env.SMA_PERIOD}"`);
+      }
     }
 
     // Fail here rather than at send time, with a message that does not echo

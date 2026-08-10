@@ -39,15 +39,15 @@ FORCE_ALERT=true npm start
 
 ## Configuration
 
-Everything lives in `.env`; nothing is defaulted in code, so a typo fails the
-run instead of quietly watching the wrong ticker.
+`ALERT_URL` is the only one you must set — it is the only value that cannot
+have a sensible default.
 
-| Variable | Required | Meaning |
-| --- | --- | --- |
-| `ALERT_URL` | yes | Telegram `sendMessage` URL with token and `chat_id` |
-| `SYMBOL` | yes | Ticker to watch, e.g. `TQQQ` |
-| `SMA_PERIOD` | yes | SMA length in trading days, e.g. `200` |
-| `FORCE_ALERT` | no | `true` sends regardless of any cross — for testing |
+| Variable | Required | Default | Meaning |
+| --- | --- | --- | --- |
+| `ALERT_URL` | **yes** | — | Telegram `sendMessage` URL with token and `chat_id` |
+| `SYMBOL` | no | `TQQQ` | Ticker to watch |
+| `SMA_PERIOD` | no | `200` | SMA length in trading days |
+| `FORCE_ALERT` | no | off | `true` sends regardless of any cross — for testing |
 
 ## Running it
 
