@@ -1,0 +1,7 @@
+services:
+  trading-alert:
+    build: .
+    image: trading-alert
+    env_file: .env
+    # One-shot job: it checks, alerts, and exits. Schedule it from host cron.
+    restart: "no"

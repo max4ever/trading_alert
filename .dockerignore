@@ -1,0 +1,14 @@
+# Never bake secrets into the image — pass them at run time instead.
+.env
+.env.*
+
+node_modules/
+npm-debug.log
+*.log
+
+.git/
+.gitignore
+Dockerfile
+.dockerignore
+docker-compose.yml
+README.md

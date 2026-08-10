@@ -1,0 +1,18 @@
+{
+  "name": "trading-alert",
+  "version": "1.0.0",
+  "description": "Checks TQQQ against its 200-day SMA and fires a Telegram alert.",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "trading-signals": "^8.2.1",
+    "yahoo-finance2": "^4.0.2"
+  }
+}
