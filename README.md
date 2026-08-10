@@ -1,7 +1,7 @@
 # trading-alert
 
-Checks whether a ticker (default **TQQQ**) is trading above or below its **200-day SMA**
-and sends the result to Telegram.
+Sends a Telegram message when a ticker (default **TQQQ**) **crosses** its
+**200-day SMA** — not every day it happens to be above or below one.
 
 Built as small classes, one job each:
 
@@ -10,9 +10,22 @@ Built as small classes, one job each:
 | `src/Config.js` | `Config` | Loads `.env` via dotenv, validates settings |
 | `src/Logger.js` | `Logger` | Structured pino logging, redacts the bot token |
 | `src/YahooClient.js` | `YahooClient` | Fetches daily closes via `yahoo-finance2` |
-| `src/SmaChecker.js` | `SmaChecker` | Computes the SMA via `trading-signals`, returns above/below |
-| `src/TelegramNotifier.js` | `TelegramNotifier` | Appends the message to `ALERT_URL` and calls it |
-| `src/index.js` | `TradingAlert` | Wires the four together |
+| `src/SmaChecker.js` | `SmaChecker` | SMA via `trading-signals`, finds the last cross |
+| `src/TelegramNotifier.js` | `TelegramNotifier` | Formats the message and calls `ALERT_URL` |
+| `src/TradingAlert.js` | `TradingAlert` | Decides whether the cross is worth alerting on |
+| `src/index.js` | — | Entry point: builds the objects and runs once |
+
+## How the cross is detected
+
+The run is **stateless**. Nothing is written to disk and no volume is needed —
+the container starts clean, checks, and exits.
+
+Each run fetches enough history to compute the SMA for every recent session,
+marks each one above or below, and finds the most recent flip. A message goes
+out only when that flip is the **latest completed session**. Any other day it
+logs the position and sends nothing.
+
+Run it once per trading day, after the close.
 
 ## Setup
 
@@ -41,17 +54,29 @@ URL needs no placeholder.
 
 ## Configuration
 
-| Variable | Default | Meaning |
-| --- | --- | --- |
-| `ALERT_URL` | *(required)* | Telegram `sendMessage` URL with token and `chat_id` |
-| `SYMBOL` | `TQQQ` | Ticker to watch |
-| `SMA_PERIOD` | `200` | SMA length in trading days |
-| `ALERT_ON` | `always` | `always`, `above`, or `below` — when to actually send |
-| `LOG_LEVEL` | `info` | `trace`, `debug`, `info`, `warn`, `error`, `fatal` |
-| `LOG_PRETTY` | *(unset)* | `true` for coloured local output; leave unset in the cloud |
+Nothing is defaulted in the code — settings live in `.env`, and the run fails
+fast if a required one is absent rather than watching some assumed ticker.
 
-`ALERT_ON=always` messages you on every run. Use `below` to be told only when
-the ticker drops under its SMA.
+| Variable | Required | Meaning |
+| --- | --- | --- |
+| `ALERT_URL` | yes | Telegram `sendMessage` URL with token and `chat_id` |
+| `SYMBOL` | yes | Ticker to watch |
+| `SMA_PERIOD` | yes | SMA length in trading days |
+| `FORCE_ALERT` | no | `true` sends regardless of any cross — for testing the bot |
+
+## Logging
+
+One JSON object per line on stdout, ready for whatever collects logs in your
+cloud. A run is three lines, or two plus an error:
+
+```json
+{"level":"info","time":"2026-08-10T09:04:42.591Z","service":"trading-alert","symbol":"TQQQ","close":74.47,"sma":59.8128,"asOf":"2026-08-07","position":"above","barsSinceCross":6,"msg":"TQQQ is above its SMA200"}
+{"level":"info","time":"2026-08-10T09:04:42.591Z","service":"trading-alert","barsSinceCross":6,"reason":"last cross was 6 sessions ago","msg":"alert skipped"}
+{"level":"info","time":"2026-08-10T09:04:42.591Z","service":"trading-alert","durationMs":396,"alertSent":false,"msg":"run complete"}
+```
+
+`ALERT_URL` carries your bot token, so every log path is scrubbed of it before
+writing — strings, nested fields, and error stacks alike.
 
 ## Run locally
 
@@ -79,7 +104,6 @@ docker run --rm --env-file .env trading-alert
 docker run --rm \
   -e ALERT_URL='https://api.telegram.org/bot<TOKEN>/sendMessage?chat_id=<ID>' \
   -e SYMBOL=TQQQ \
-  -e ALERT_ON=below \
   trading-alert
 
 # 3. docker compose (reads .env via env_file)
@@ -97,6 +121,10 @@ this runs at 22:00 on weekdays:
 ```cron
 0 22 * * 1-5 cd /home/maxim/trading_alert && docker run --rm --env-file .env trading-alert >> ~/trading-alert.log 2>&1
 ```
+
+Run it **after the US close** (21:00 UTC, or 20:00 UTC during daylight saving).
+Signals are judged on closing prices, so a run during market hours only ever
+sees the previous completed session.
 
 ## Notes
 
