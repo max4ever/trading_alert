@@ -4,13 +4,15 @@ export class Logger {
   // Telegram bot tokens look like `bot123456789:AAH...`, and ALERT_URL contains one.
   static #BOT_TOKEN = /bot\d+:[A-Za-z0-9_-]+/g;
 
+  #pino;
+
   // One JSON object per line on stdout: what every cloud log collector wants,
   // and a handful of lines per run, so there is nothing to tune.
   constructor() {
     // Bound here because logMethod needs `this` to stay the pino logger.
     const scrub = (value) => this.#scrub(value);
 
-    this.pino = pino({
+    this.#pino = pino({
       level: 'info',
       base: { service: 'trading-alert' },
       // Collectors group by level name, not pino's numeric default.
@@ -45,10 +47,10 @@ export class Logger {
   }
 
   info(fields, message) {
-    this.pino.info(fields, message);
+    this.#pino.info(fields, message);
   }
 
   error(fields, message) {
-    this.pino.error(fields, message);
+    this.#pino.error(fields, message);
   }
 }

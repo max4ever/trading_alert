@@ -1,30 +1,27 @@
 import { SMA } from 'trading-signals';
 
 export class SmaChecker {
+  #period;
+
   constructor(period) {
-    this.period = period;
+    this.#period = period;
   }
 
   // SMA value for every bar, aligned to `closes`. null until enough inputs.
-  series(closes) {
-    if (closes.length < this.period) {
-      throw new Error(`Need ${this.period} closes for the SMA, got ${closes.length}`);
+  #series(closes) {
+    if (closes.length < this.#period) {
+      throw new Error(`Need ${this.#period} closes for the SMA, got ${closes.length}`);
     }
 
-    const sma = new SMA(this.period);
+    const sma = new SMA(this.#period);
     return closes.map((close) => {
       const value = sma.update(close, false);
       return value === null ? null : Number(value);
     });
   }
 
-  average(closes) {
-    const series = this.series(closes);
-    return series[series.length - 1];
-  }
-
   check({ symbol, price, closes, asOf }) {
-    const smaSeries = this.series(closes);
+    const smaSeries = this.#series(closes);
     const sma = smaSeries[smaSeries.length - 1];
 
     // above/below for each bar we have an SMA for, all on a closing basis.
@@ -50,7 +47,7 @@ export class SmaChecker {
       price,
       sma,
       asOf,
-      period: this.period,
+      period: this.#period,
       position,
       diffPct: ((price - sma) / sma) * 100,
       barsSinceCross,

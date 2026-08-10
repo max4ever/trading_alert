@@ -1,9 +1,11 @@
 export class TelegramNotifier {
+  #alertUrl;
+
   constructor(alertUrl) {
-    this.alertUrl = alertUrl;
+    this.#alertUrl = alertUrl;
   }
 
-  format({ symbol, price, sma, period, position, diffPct, barsSinceCross, asOf }) {
+  #format({ symbol, price, sma, period, position, diffPct, barsSinceCross, asOf }) {
     const arrow = position === 'above' ? '🟢' : '🔴';
     const sign = diffPct >= 0 ? '+' : '';
 
@@ -24,8 +26,8 @@ export class TelegramNotifier {
 
   // The .env URL already carries the bot token and chat_id; we just add the text.
   async send(result) {
-    const url = new URL(this.alertUrl);
-    url.searchParams.set('text', this.format(result));
+    const url = new URL(this.#alertUrl);
+    url.searchParams.set('text', this.#format(result));
 
     const res = await fetch(url, { method: 'GET' });
     if (!res.ok) {

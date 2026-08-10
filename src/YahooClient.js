@@ -1,18 +1,20 @@
 import YahooFinance from 'yahoo-finance2';
 
 export class YahooClient {
+  #yf;
+
   constructor(options = {}) {
-    this.yf = new YahooFinance({ suppressNotices: ['yahooSurvey'], ...options });
+    this.#yf = new YahooFinance({ suppressNotices: ['yahooSurvey'], ...options });
   }
 
-  // Returns daily closes oldest -> newest, plus the latest price.
+  // Returns daily closes oldest -> newest, plus the latest close.
   // `minBars` is in trading days; ~252 of those fit in a calendar year, so we
   // ask for a wider calendar window and let the buffer absorb holidays.
   async getDailyCloses(symbol, minBars) {
     const calendarDays = Math.ceil(minBars * 1.6) + 30;
     const period1 = new Date(Date.now() - calendarDays * 24 * 60 * 60 * 1000);
 
-    const { meta, quotes } = await this.yf.chart(symbol, { period1, interval: '1d' });
+    const { meta, quotes } = await this.#yf.chart(symbol, { period1, interval: '1d' });
 
     // Yahoo pads the series with nulls on holidays / the in-progress bar.
     const bars = quotes.filter((q) => typeof q.close === 'number');
