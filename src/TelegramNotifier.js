@@ -5,9 +5,9 @@ export class TelegramNotifier {
     this.#alertUrl = alertUrl;
   }
 
-  #format({ symbol, price, sma, period, position, diffPct, barsSinceCross, asOf }) {
+  #format({ symbol, price, sma, period, position, diffPercent, barsSinceCross, asOf }) {
     const arrow = position === 'above' ? '🟢' : '🔴';
-    const sign = diffPct >= 0 ? '+' : '';
+    const sign = diffPercent >= 0 ? '+' : '';
 
     let headline = `${arrow} ${symbol} crossed ${position.toUpperCase()} its SMA${period}`;
     if (barsSinceCross === null) headline = `${arrow} ${symbol} is ${position} its SMA${period}`;
@@ -20,7 +20,7 @@ export class TelegramNotifier {
       `${headline}\n` +
       `Close${session}: $${price.toFixed(2)}\n` +
       `SMA${period}: $${sma.toFixed(2)}\n` +
-      `Diff: ${sign}${diffPct.toFixed(2)}%`
+      `Diff: ${sign}${diffPercent.toFixed(2)}%`
     );
   }
 
@@ -29,10 +29,10 @@ export class TelegramNotifier {
     const url = new URL(this.#alertUrl);
     url.searchParams.set('text', this.#format(result));
 
-    const res = await fetch(url, { method: 'GET' });
-    if (!res.ok) {
-      const body = await res.text().catch(() => '');
-      throw new Error(`Alert failed: ${res.status} ${res.statusText} ${body}`.trim());
+    const response = await fetch(url, { method: 'GET' });
+    if (!response.ok) {
+      const body = await response.text().catch(() => '');
+      throw new Error(`Alert failed: ${response.status} ${response.statusText} ${body}`.trim());
     }
   }
 }

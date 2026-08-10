@@ -13,9 +13,9 @@ export class SmaChecker {
       throw new Error(`Need ${this.#period} closes for the SMA, got ${closes.length}`);
     }
 
-    const sma = new SMA(this.#period);
+    const indicator = new SMA(this.#period);
     return closes.map((close) => {
-      const value = sma.update(close, false);
+      const value = indicator.update(close, false);
       return value === null ? null : Number(value);
     });
   }
@@ -49,7 +49,7 @@ export class SmaChecker {
       asOf,
       period: this.#period,
       position,
-      diffPct: ((price - sma) / sma) * 100,
+      diffPercent: ((price - sma) / sma) * 100,
       barsSinceCross,
     };
   }

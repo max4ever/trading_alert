@@ -41,7 +41,7 @@ export class TradingAlert {
         asOf: result.asOf?.toISOString().slice(0, 10),
         period: result.period,
         position: result.position,
-        diffPct: Number(result.diffPct.toFixed(2)),
+        diffPercent: Number(result.diffPercent.toFixed(2)),
         barsSinceCross: result.barsSinceCross,
         bars: quote.closes.length,
         fetchMs,

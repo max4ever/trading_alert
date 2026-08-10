@@ -1,10 +1,10 @@
 import YahooFinance from 'yahoo-finance2';
 
 export class YahooClient {
-  #yf;
+  #yahooFinance;
 
   constructor(options = {}) {
-    this.#yf = new YahooFinance({ suppressNotices: ['yahooSurvey'], ...options });
+    this.#yahooFinance = new YahooFinance({ suppressNotices: ['yahooSurvey'], ...options });
   }
 
   // Returns daily closes oldest -> newest, plus the latest close.
@@ -14,10 +14,10 @@ export class YahooClient {
     const calendarDays = Math.ceil(minBars * 1.6) + 30;
     const period1 = new Date(Date.now() - calendarDays * 24 * 60 * 60 * 1000);
 
-    const { meta, quotes } = await this.#yf.chart(symbol, { period1, interval: '1d' });
+    const { meta, quotes } = await this.#yahooFinance.chart(symbol, { period1, interval: '1d' });
 
     // Yahoo pads the series with nulls on holidays / the in-progress bar.
-    const bars = quotes.filter((q) => typeof q.close === 'number');
+    const bars = quotes.filter((quote) => typeof quote.close === 'number');
     if (bars.length === 0) throw new Error(`No closing prices returned for ${symbol}`);
 
     const latest = bars[bars.length - 1];
@@ -30,7 +30,7 @@ export class YahooClient {
       symbol: meta?.symbol ?? symbol,
       price: latest.close,
       asOf: latest.date,
-      closes: bars.map((q) => q.close),
+      closes: bars.map((quote) => quote.close),
     };
   }
 }
