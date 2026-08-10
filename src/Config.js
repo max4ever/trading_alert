@@ -18,8 +18,15 @@ export class Config {
 
   // dotenv leaves already-set env vars alone, so real env wins over the file.
   // That is what we want once this runs in Docker.
-  static load(path) {
+  //
+  // Kept separate from the constructor so the logger can be built from the
+  // loaded env before any validation error needs reporting.
+  static loadDotenv(path) {
     loadDotenv({ path, quiet: true });
+  }
+
+  static load(path) {
+    Config.loadDotenv(path);
     return new Config();
   }
 }

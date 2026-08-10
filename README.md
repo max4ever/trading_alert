@@ -8,6 +8,7 @@ Built as small classes, one job each:
 | File | Class | Job |
 | --- | --- | --- |
 | `src/Config.js` | `Config` | Loads `.env` via dotenv, validates settings |
+| `src/Logger.js` | `Logger` | Structured pino logging, redacts the bot token |
 | `src/YahooClient.js` | `YahooClient` | Fetches daily closes via `yahoo-finance2` |
 | `src/SmaChecker.js` | `SmaChecker` | Computes the SMA via `trading-signals`, returns above/below |
 | `src/TelegramNotifier.js` | `TelegramNotifier` | Appends the message to `ALERT_URL` and calls it |
@@ -46,6 +47,8 @@ URL needs no placeholder.
 | `SYMBOL` | `TQQQ` | Ticker to watch |
 | `SMA_PERIOD` | `200` | SMA length in trading days |
 | `ALERT_ON` | `always` | `always`, `above`, or `below` — when to actually send |
+| `LOG_LEVEL` | `info` | `trace`, `debug`, `info`, `warn`, `error`, `fatal` |
+| `LOG_PRETTY` | *(unset)* | `true` for coloured local output; leave unset in the cloud |
 
 `ALERT_ON=always` messages you on every run. Use `below` to be told only when
 the ticker drops under its SMA.
