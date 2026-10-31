@@ -39,10 +39,26 @@ export class Config {
 
     // Fail here rather than at send time, with a message that does not echo
     // the token back into the logs.
+    let url;
     try {
-      new URL(env.ALERT_URL.trim());
+      url = new URL(env.ALERT_URL.trim());
     } catch {
       throw new Error('ALERT_URL is not a valid URL (it should start with https://)');
+    }
+
+    // Telegram only routes /bot<token>/<method>. Drop the "bot" prefix and
+    // every request answers a bare 404, which reads like a bad token but is
+    // really a malformed path. The URL itself stays out of the message
+    // because it carries the token.
+    if (!/^\/bot\d+:[A-Za-z0-9_-]+\/sendMessage$/.test(url.pathname)) {
+      throw new Error(
+        'ALERT_URL path must be /bot<BOT_TOKEN>/sendMessage, e.g. ' +
+          'https://api.telegram.org/bot<BOT_TOKEN>/sendMessage?chat_id=<CHAT_ID>',
+      );
+    }
+
+    if (!url.searchParams.get('chat_id')?.trim()) {
+      throw new Error('ALERT_URL is missing the chat_id query parameter (?chat_id=<CHAT_ID>)');
     }
   }
 }

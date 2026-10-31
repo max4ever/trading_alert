@@ -21,6 +21,10 @@ ALERT_URL=https://api.telegram.org/bot<BOT_TOKEN>/sendMessage?chat_id=<CHAT_ID>
 The alert text is appended as the `text` parameter, so the URL needs no
 placeholder.
 
+If Telegram answers `404 Not Found`, the URL is wrong rather than the token —
+usually the `bot` prefix before the token is missing. A wrong `chat_id` answers
+`400 Bad Request: chat not found` instead.
+
 <details>
 <summary>Getting a bot token and chat id</summary>
 
