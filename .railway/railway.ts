@@ -17,7 +17,8 @@ export default defineRailway(() => {
     deploy: {
       // UTC: 22:01 is after the New York close in summer and winter.
       cronSchedule: "1 22 * * 1-5",
-      limitOverride: { containers: { cpu: 0.5, memoryBytes: 1000000000 } },
+      // A run peaks at ~160 MB (measured locally under a 512 MB cap).
+      limitOverride: { containers: { cpu: 0.5, memoryBytes: 500000000 } },
       restartPolicyType: "NEVER",
     },
     networking: { privateNetworkEndpoint: "tradingalert" },
