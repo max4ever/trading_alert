@@ -12,3 +12,4 @@ Dockerfile
 .dockerignore
 docker-compose.yml
 README.md
+.railway
