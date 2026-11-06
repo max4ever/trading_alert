@@ -1,5 +1,5 @@
 # Node 24 "Krypton" is the current LTS. yahoo-finance2 requires >= 22.
-FROM node:24-alpine
+FROM node:26-alpine
 
 ENV NODE_ENV=production
 WORKDIR /app
